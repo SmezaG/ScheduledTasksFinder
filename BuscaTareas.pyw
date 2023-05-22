@@ -60,7 +60,7 @@ def search_tasks(event=None):
     treeview_tasks.delete(*treeview_tasks.get_children())
 
     # Obtener las tareas programadas
-    scheduled_tasks = get_scheduled_tasks(server_name, search_text)
+    scheduled_tasks = get_scheduled_tasks(entry_server.get(), search_text)
     if len(scheduled_tasks) > 0:
         for task_name, next_run_time, status, parameters in scheduled_tasks:
             treeview_tasks.insert('', tk.END, values=(task_name, next_run_time, status, parameters))
@@ -68,11 +68,19 @@ def search_tasks(event=None):
         treeview_tasks.insert('', tk.END, values=("No se encontraron tareas que coincidan con el texto de búsqueda.", "", "", ""))
 
 # Configuración del servidor
-server_name = 'SERVERSAP'
+default_server_name = 'SERVERSAP'
 
 # Crear la ventana principal
 window = tk.Tk()
 window.title("Búsqueda de Tareas Programadas")
+
+# Crear etiqueta y entrada de texto para el servidor
+label_server = tk.Label(window, text="Servidor:")
+label_server.pack()
+
+entry_server = tk.Entry(window)
+entry_server.pack()
+entry_server.insert(0, default_server_name)
 
 # Crear etiqueta y entrada de texto para el texto de búsqueda
 label_search = tk.Label(window, text="Texto de Búsqueda:")
@@ -89,14 +97,6 @@ treeview_tasks = ttk.Treeview(window, columns=('Task', 'Next Run Time', 'Status'
 treeview_tasks.heading('Task', text='Tarea')
 treeview_tasks.heading('Next Run Time', text='Próxima ejecución')
 treeview_tasks.heading('Status', text='Estado')
-
-treeview_tasks.heading('Parameters', text='Parámetros')
-treeview_tasks.pack()
-
-# Ajustar el ancho de las columnas
-treeview_tasks.column('Task', width=200)
-treeview_tasks.column('Next Run Time', width=200)
-treeview_tasks.column('Status', width=100)
 treeview_tasks.heading('Parameters', text='Parámetros')
 treeview_tasks.pack()
 
@@ -124,11 +124,12 @@ screen_width = window.winfo_screenwidth()
 screen_height = window.winfo_screenheight()
 
 # Calcular las nuevas dimensiones de la ventana
-window_width = int(screen_width * 0.7)  # Utilizamos el 80% del ancho de la pantalla
-window_height = int(screen_height * 0.4)  # Utilizamos el 80% de la altura de la pantalla
+window_width = int(screen_width * 0.7)  # Utilizamos el 70% del ancho de la pantalla
+window_height = int(screen_height * 0.7)  # Utilizamos el 70% de la altura de la pantalla
 
 # Configurar el tamaño de la ventana
 window.geometry(f"{window_width}x{window_height}")
 
 # Iniciar el bucle principal de la interfaz
 window.mainloop()
+
