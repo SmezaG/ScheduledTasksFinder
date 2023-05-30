@@ -15,7 +15,8 @@ def get_scheduled_tasks(server_name, search_text):
         if search_text.lower() in task.Name.lower():
             status = get_task_status(task)
             parameters = get_task_parameters(task)
-            tasks.append((task.Name, task.NextRunTime, status, parameters))
+            arguments = get_task_arguments(task)
+            tasks.append((task.Name, task.NextRunTime, status, parameters,arguments))
 
     return tasks
 
@@ -33,17 +34,28 @@ def get_task_parameters(task):
     params = ""
     for action in definition.Actions:
         if action.Type == 0:  # Script Action
-            params += f"{action.Path} {action.Arguments}\n"
+            params += f"{action.Path}\n"
+    return params.strip()
+
+def get_task_arguments(task):
+    definition = task.Definition
+    params = ""
+    for action in definition.Actions:
+        if action.Type == 0:  # Script Action
+            params += f"{action.Arguments}\n"
     return params.strip()
 
 def copy_selected(event=None):
     selected_items = treeview_tasks.selection()
     if selected_items:
         copied_data = ""
-        for item in selected_items:
-            copied_data += "\t".join(treeview_tasks.item(item, 'values')) + "\n"
+        selected_cell = treeview_tasks.focus()
+        values = treeview_tasks.item(selected_cell, 'values')
+        if values:
+            copied_data = values[4]
         window.clipboard_clear()
         window.clipboard_append(copied_data)
+
 
 def execute_selected(event):
     selected_item = treeview_tasks.focus()
@@ -62,8 +74,8 @@ def search_tasks(event=None):
     # Obtener las tareas programadas
     scheduled_tasks = get_scheduled_tasks(entry_server.get(), search_text)
     if len(scheduled_tasks) > 0:
-        for task_name, next_run_time, status, parameters in scheduled_tasks:
-            treeview_tasks.insert('', tk.END, values=(task_name, next_run_time, status, parameters))
+        for task_name, next_run_time, status, parameters, Arguments in scheduled_tasks:
+            treeview_tasks.insert('', tk.END, values=(task_name, next_run_time, status, parameters,Arguments))
     else:
         treeview_tasks.insert('', tk.END, values=("No se encontraron tareas que coincidan con el texto de búsqueda.", "", "", ""))
 
@@ -93,18 +105,20 @@ entry_search.pack()
 entry_search.bind('<Return>', search_tasks)
 
 # Crear el Treeview para mostrar las tareas en un grid
-treeview_tasks = ttk.Treeview(window, columns=('Task', 'Next Run Time', 'Status', 'Parameters'), show='headings')
+treeview_tasks = ttk.Treeview(window, columns=('Task', 'Next Run Time', 'Status', 'Parameters','Arguments'), show='headings')
 treeview_tasks.heading('Task', text='Tarea')
 treeview_tasks.heading('Next Run Time', text='Próxima ejecución')
 treeview_tasks.heading('Status', text='Estado')
-treeview_tasks.heading('Parameters', text='Parámetros')
+treeview_tasks.heading('Parameters', text='Ruta')
+treeview_tasks.heading('Arguments', text='Parámetros')
 treeview_tasks.pack()
 
 # Ajustar el ancho de las columnas
 treeview_tasks.column('Task', width=200)
 treeview_tasks.column('Next Run Time', width=200)
 treeview_tasks.column('Status', width=100)
-treeview_tasks.column('Parameters', width=800)
+treeview_tasks.column('Parameters', width=600)
+treeview_tasks.column('Arguments', width=200)
 
 # Configurar el alto del Treeview
 treeview_tasks.configure(height=15)
