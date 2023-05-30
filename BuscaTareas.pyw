@@ -4,6 +4,7 @@ from tkinter import ttk
 import subprocess
 from cryptography.fernet import Fernet
 import configparser
+from PIL import ImageTk, Image
 
 def get_scheduled_tasks(server_name, search_text):
     tasks = []
@@ -118,6 +119,24 @@ def search_tasks(event=None):
     else:
         treeview_tasks.insert('', tk.END, values=("No se encontraron tareas que coincidan con el texto de búsqueda.", "", "", ""))
 
+
+def TreeviewCreator(window):
+    treeview_tasks = ttk.Treeview(window, columns=('Task', 'Trigger', 'Status', 'Parameters','Arguments'), show='headings')
+    treeview_tasks.heading('Task', text='Tarea')
+    treeview_tasks.heading('Trigger', text='Desencadenadores')
+    treeview_tasks.heading('Status', text='Estado')
+    treeview_tasks.heading('Parameters', text='Ruta')
+    treeview_tasks.heading('Arguments', text='Parámetros')
+    treeview_tasks.pack()
+
+    # Ajustar el ancho de las columnas
+    treeview_tasks.column('Task', width=200)
+    treeview_tasks.column('Trigger', width=200)
+    treeview_tasks.column('Status', width=100)
+    treeview_tasks.column('Parameters', width=600)
+    treeview_tasks.column('Arguments', width=200)
+    return treeview_tasks
+
 # Configuración del servidor
 default_server_name = 'SERVERSAP'
 
@@ -130,12 +149,11 @@ label_server = tk.Label(window, text="Servidor:")
 label_server.pack()
 
 # Cargar la imagen del logo
-#logo_image = tk.PhotoImage(file="logo.png")
-#logo_image = logo_image.subsample(3, 3) 
+logo_image = Image.open("logo.png")  # Reemplaza "logo.png" con la ruta y el nombre de tu archivo de imagen
+logo_image = logo_image.resize((16, 16))  # Ajusta el tamaño del logo según tus necesidades
 
-# Crear un widget Label para mostrar el logo
-#logo_label = tk.Label(window, image=logo_image)
-#logo_label.pack(anchor="nw", padx=10, pady=10)
+# Crear una instancia de la clase PhotoImage
+window.iconphoto(True, ImageTk.PhotoImage(logo_image))
 
 entry_server = tk.Entry(window)
 entry_server.pack()
@@ -151,21 +169,7 @@ entry_search.pack()
 # Vincular la tecla "Enter" a la función search_tasks
 entry_search.bind('<Return>', search_tasks)
 
-# Crear el Treeview para mostrar las tareas en un grid
-treeview_tasks = ttk.Treeview(window, columns=('Task', 'Next Run Time', 'Status', 'Parameters','Arguments'), show='headings')
-treeview_tasks.heading('Task', text='Tarea')
-treeview_tasks.heading('Next Run Time', text='Próxima ejecución')
-treeview_tasks.heading('Status', text='Estado')
-treeview_tasks.heading('Parameters', text='Ruta')
-treeview_tasks.heading('Arguments', text='Parámetros')
-treeview_tasks.pack()
-
-# Ajustar el ancho de las columnas
-treeview_tasks.column('Task', width=200)
-treeview_tasks.column('Next Run Time', width=200)
-treeview_tasks.column('Status', width=100)
-treeview_tasks.column('Parameters', width=600)
-treeview_tasks.column('Arguments', width=200)
+treeview_tasks = TreeviewCreator(window)
 
 # Configurar el alto del Treeview
 treeview_tasks.configure(height=15)
