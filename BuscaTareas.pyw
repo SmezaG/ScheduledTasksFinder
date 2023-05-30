@@ -1,6 +1,9 @@
 import win32com.client
 import tkinter as tk
 from tkinter import ttk
+import subprocess
+from cryptography.fernet import Fernet
+import configparser
 
 def get_scheduled_tasks(server_name, search_text):
     tasks = []
@@ -57,12 +60,48 @@ def copy_selected(event=None):
         window.clipboard_append(copied_data)
 
 
-def execute_selected(event):
+def decrypt_ini_file(file_path, key):
+    with open(file_path, "rb") as file:
+        file_data = file.read()
+    fernet = Fernet(key)
+    decrypted_data = fernet.decrypt(file_data)
+    return decrypted_data.decode()
+
+
+def execute_selected(event=None):
     selected_item = treeview_tasks.focus()
     if selected_item:
         task_name = treeview_tasks.item(selected_item, 'values')[0]
         print(f"Ejecutando tarea: {task_name}")
-        # Aquí puedes agregar la lógica para ejecutar la tarea seleccionada
+
+        # Cargar y desencriptar el archivo .ini
+        encrypted_file_path = "params.ini"
+        keyfile = open("key.txt","r")
+        encryption_key = keyfile.read()
+        keyfile.close()
+        decrypted_ini_data = decrypt_ini_file(encrypted_file_path, encryption_key)
+
+        config_parser = configparser.ConfigParser()
+        config_parser.read_string(decrypted_ini_data)
+
+        server_name = config_parser.get("Credentials", "servidor")
+        username = config_parser.get("Credentials", "usuario")
+        password = config_parser.get("Credentials", "password")
+
+        # Comando para ejecutar la tarea en el servidor remoto con el usuario "username"
+        command = [
+            "schtasks",
+            "/run",
+            "/s",
+            server_name,
+            "/tn",
+            task_name,
+            "/u",
+            username,
+            "/p",
+            password
+        ]
+        subprocess.run(command, shell=True)
 
 def search_tasks(event=None):
     # Obtener el texto de búsqueda de la entrada de texto
@@ -89,6 +128,14 @@ window.title("Búsqueda de Tareas Programadas")
 # Crear etiqueta y entrada de texto para el servidor
 label_server = tk.Label(window, text="Servidor:")
 label_server.pack()
+
+# Cargar la imagen del logo
+#logo_image = tk.PhotoImage(file="logo.png")
+#logo_image = logo_image.subsample(3, 3) 
+
+# Crear un widget Label para mostrar el logo
+#logo_label = tk.Label(window, image=logo_image)
+#logo_label.pack(anchor="nw", padx=10, pady=10)
 
 entry_server = tk.Entry(window)
 entry_server.pack()
@@ -126,12 +173,13 @@ treeview_tasks.configure(height=15)
 # Configurar menú contextual para copiar
 context_menu = tk.Menu(window, tearoff=0)
 context_menu.add_command(label="Copiar", command=copy_selected)
+context_menu.add_command(label="Ejecutar", command=execute_selected)
 
 # Vincular el menú contextual al Treeview
 treeview_tasks.bind("<Button-3>", lambda event: context_menu.post(event.x_root, event.y_root))
 
 # Configurar evento de doble clic para ejecutar la tarea
-treeview_tasks.bind("<Double-1>", execute_selected)
+#treeview_tasks.bind("<Double-1>", execute_selected)
 
 # Obtener la anchura y altura de la pantalla
 screen_width = window.winfo_screenwidth()
