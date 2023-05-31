@@ -23,7 +23,7 @@ This guide will help you set up the necessary environment to run the project. Fo
    [Credentials]
    server = "your_server"
    user = "your_user"
-   password = "your_password"```
+   password = "your_password"
    
    
   Replace "your_server", "your_username", and "your_password" with the appropriate values. Save the file after making the changes.
@@ -37,9 +37,9 @@ This guide will help you set up the necessary environment to run the project. Fo
 
 Once you have completed the installation, you are ready to run the project. You can use one of the following files:
 
-- Buscatareas.bat: Run this file to start the project from the command line.
+- `Buscatareas.bat` : Run this file to start the project from the command line.
 
-- Buscatareas.pyw: Run this file to start the project in a windowed environment.
+- `Buscatareas.pyw` : Run this file to start the project in a windowed environment.
 
 Both files perform the same function, so you can choose whichever suits your needs.
 
