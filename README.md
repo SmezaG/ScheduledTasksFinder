@@ -1,3 +1,8 @@
+# Project Description
+
+The project aims to create a search tool that allows users to find, execute, and enable or disable scheduled tasks on a server from a local environment. It provides a user-friendly interface for managing scheduled tasks remotely without directly accessing the server.
+
+
 # Installation Guide
 
 This guide will help you set up the necessary environment to run the project. Follow the steps below for a successful installation.
