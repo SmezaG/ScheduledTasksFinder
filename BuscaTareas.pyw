@@ -104,7 +104,7 @@ def search_tasks(event=None):
     scheduled_tasks = get_scheduled_tasks(entry_server.get(), search_text)
     if len(scheduled_tasks) > 0:
         for task_name, next_run_time, status, parameters, Arguments in scheduled_tasks:
-            treeview_tasks.insert('', tk.END, values=(task_name, next_run_time, status, parameters,Arguments))
+            treeview_tasks.insert('', tk.END, values=(task_name, next_run_time, status, parameters, Arguments), tags=("Data",))
     else:
         treeview_tasks.insert('', tk.END, values=("No se encontraron tareas que coincidan con el texto de búsqueda.", "", "", ""))
 
@@ -116,7 +116,7 @@ def TreeviewCreator(window):
     treeview_tasks.heading('Status', text='Estado')
     treeview_tasks.heading('Parameters', text='Ruta')
     treeview_tasks.heading('Arguments', text='Parámetros')
-    treeview_tasks.pack()
+    #treeview_tasks.pack()
 
     # Ajustar el ancho de las columnas
     treeview_tasks.column('Task', width=200)
@@ -126,7 +126,7 @@ def TreeviewCreator(window):
     treeview_tasks.column('Arguments', width=200)
     return treeview_tasks
 
-def Update_tasck_status(event=None):
+def Update_task_status(event=None):
     selected_item = treeview_tasks.focus()
     if selected_item:
 
@@ -189,10 +189,6 @@ default_server_name = server_name
 window = tk.Tk()
 window.title("Búsqueda de Tareas Programadas")
 
-# Crear etiqueta y entrada de texto para el servidor
-label_server = tk.Label(window, text="Servidor:")
-label_server.pack()
-
 # Cargar la imagen del logo
 logo_image = Image.open("logo.png")  # Reemplaza "logo.png" con la ruta y el nombre de tu archivo de imagen
 logo_image = logo_image.resize((16, 16))  # Ajusta el tamaño del logo según tus necesidades
@@ -200,45 +196,68 @@ logo_image = logo_image.resize((16, 16))  # Ajusta el tamaño del logo según tu
 # Crear una instancia de la clase PhotoImage
 window.iconphoto(True, ImageTk.PhotoImage(logo_image))
 
-entry_server = tk.Entry(window)
-entry_server.pack()
+# Crear el estilo para los widgets
+style = ttk.Style()
+style.configure("TLabel", font=("Arial", 10))
+style.configure("TEntry", font=("Arial", 10), borderwidth=0, relief="solid", padding=5)
+style.configure("Treeview.Heading", font=("Arial", 10,))
+
+# Obtener las dimensiones de la pantalla
+screen_width = window.winfo_screenwidth()
+screen_height = window.winfo_screenheight()
+
+# Calcular las nuevas dimensiones de la ventana
+window_width = int(screen_width * 0.7)
+window_height = int(screen_height * 0.7)
+
+# Configurar el tamaño y posición de la ventana
+window.geometry(f"{window_width}x{window_height}+{int((screen_width-window_width)/2)}+{int((screen_height-window_height)/2)}")
+
+# Crear el frame principal
+frame_main = ttk.Frame(window, padding=20)
+frame_main.pack(fill='both', expand=True)
+
+# Crear etiqueta y entrada de texto para el servidor
+label_server = ttk.Label(frame_main, text="Servidor:")
+label_server.grid(row=0, column=0, sticky="e")
+
+entry_server = ttk.Entry(frame_main, width=30)
+entry_server.grid(row=0, column=1, padx=10, pady=5, sticky="w")
 entry_server.insert(0, default_server_name)
+entry_server.config(state = "readonly")
 
 # Crear etiqueta y entrada de texto para el texto de búsqueda
-label_search = tk.Label(window, text="Texto de Búsqueda:")
-label_search.pack()
+label_search = ttk.Label(frame_main, text="Texto de Búsqueda:")
+label_search.grid(row=1, column=0, sticky="e")
 
-entry_search = tk.Entry(window)
-entry_search.pack()
+entry_search = ttk.Entry(frame_main, width=30)
+entry_search.grid(row=1, column=1, padx=10, pady=5, sticky="w")
+
+# Espacio en blanco
+empty_label = ttk.Label(frame_main, text="")
+empty_label.grid(row=2, column=0, columnspan=2)
 
 # Vincular la tecla "Enter" a la función search_tasks
 entry_search.bind('<Return>', search_tasks)
 
-treeview_tasks = TreeviewCreator(window)
+# Crear Treeview con estilo
+treeview_tasks = TreeviewCreator(frame_main)
+treeview_tasks.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky="nsew")
+frame_main.grid_rowconfigure(3, weight=1)  # Ajustar el tamaño del treeview verticalmente
+frame_main.grid_columnconfigure(0, weight=1)  # Ajustar el tamaño del treeview horizontalmente
+frame_main.grid_columnconfigure(1, weight=1)  # Ajustar el tamaño del treeview horizontalmente
 
-# Configurar el alto del Treeview
-treeview_tasks.configure(height=15)
 
 # Configurar menú contextual para copiar
 context_menu = tk.Menu(window, tearoff=0)
 context_menu.add_command(label="Copiar", command=copy_selected)
 context_menu.add_command(label="Ejecutar", command=execute_selected)
-context_menu.add_command(label="Habilitar/Deshabilitar", command=Update_tasck_status)
+context_menu.add_command(label="Habilitar/Deshabilitar", command=Update_task_status)
 
 # Vincular el menú contextual al Treeview
 treeview_tasks.bind("<Button-3>", lambda event: context_menu.post(event.x_root, event.y_root))
 
-# Obtener la anchura y altura de la pantalla
-screen_width = window.winfo_screenwidth()
-screen_height = window.winfo_screenheight()
-
-# Calcular las nuevas dimensiones de la ventana
-window_width = int(screen_width * 0.7)  # Utilizamos el 70% del ancho de la pantalla
-window_height = int(screen_height * 0.7)  # Utilizamos el 70% de la altura de la pantalla
-
-# Configurar el tamaño de la ventana
-window.geometry(f"{window_width}x{window_height}")
+style.map("Treeview", bordercolor=[("active", "#0078D7")])
 
 # Iniciar el bucle principal de la interfaz
 window.mainloop()
-
