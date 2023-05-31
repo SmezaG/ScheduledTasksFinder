@@ -4,7 +4,9 @@ from tkinter import ttk
 import subprocess
 from cryptography.fernet import Fernet
 import configparser
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image 
+
+#Test
 
 def get_scheduled_tasks(server_name, search_text):
     tasks = []
@@ -181,9 +183,6 @@ context_menu.add_command(label="Ejecutar", command=execute_selected)
 
 # Vincular el menú contextual al Treeview
 treeview_tasks.bind("<Button-3>", lambda event: context_menu.post(event.x_root, event.y_root))
-
-# Configurar evento de doble clic para ejecutar la tarea
-#treeview_tasks.bind("<Double-1>", execute_selected)
 
 # Obtener la anchura y altura de la pantalla
 screen_width = window.winfo_screenwidth()
