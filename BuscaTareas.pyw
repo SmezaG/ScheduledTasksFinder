@@ -5,8 +5,8 @@ import subprocess
 from cryptography.fernet import Fernet
 import configparser
 from PIL import ImageTk, Image 
+import datetime
 
-#Test
 
 def get_scheduled_tasks(server_name, search_text):
     tasks = []
@@ -22,7 +22,8 @@ def get_scheduled_tasks(server_name, search_text):
             status = get_task_status(task)
             parameters = get_task_parameters(task)
             arguments = get_task_arguments(task)
-            tasks.append((task.Name, task.NextRunTime, status, parameters,arguments))
+            LastExcution = task.LastRunTime.strftime("%d/%m/%Y %H:%M:%S")
+            tasks.append((task.Name, LastExcution, status, parameters,arguments))
 
     return tasks
 
@@ -77,20 +78,6 @@ def execute_selected(event=None):
         task_name = treeview_tasks.item(selected_item, 'values')[0]
         print(f"Ejecutando tarea: {task_name}")
 
-        # Cargar y desencriptar el archivo .ini
-        encrypted_file_path = "params.ini"
-        keyfile = open("key.txt","r")
-        encryption_key = keyfile.read()
-        keyfile.close()
-        decrypted_ini_data = decrypt_ini_file(encrypted_file_path, encryption_key)
-
-        config_parser = configparser.ConfigParser()
-        config_parser.read_string(decrypted_ini_data)
-
-        server_name = config_parser.get("Credentials", "servidor")
-        username = config_parser.get("Credentials", "usuario")
-        password = config_parser.get("Credentials", "password")
-
         # Comando para ejecutar la tarea en el servidor remoto con el usuario "username"
         command = [
             "schtasks",
@@ -125,7 +112,7 @@ def search_tasks(event=None):
 def TreeviewCreator(window):
     treeview_tasks = ttk.Treeview(window, columns=('Task', 'Trigger', 'Status', 'Parameters','Arguments'), show='headings')
     treeview_tasks.heading('Task', text='Tarea')
-    treeview_tasks.heading('Trigger', text='Desencadenadores')
+    treeview_tasks.heading('Trigger', text='Última ejecución')
     treeview_tasks.heading('Status', text='Estado')
     treeview_tasks.heading('Parameters', text='Ruta')
     treeview_tasks.heading('Arguments', text='Parámetros')
@@ -139,8 +126,64 @@ def TreeviewCreator(window):
     treeview_tasks.column('Arguments', width=200)
     return treeview_tasks
 
+def Update_tasck_status(event=None):
+    selected_item = treeview_tasks.focus()
+    if selected_item:
+
+        task_name = treeview_tasks.item(selected_item, 'values')[0]
+        current_status = treeview_tasks.item(selected_item, 'values')[2]
+        if current_status == 'Deshabilitada':
+            new_status = 'Lista'
+        elif current_status == 'Lista':
+            new_status = 'Deshabilitada'
+    if new_status:
+            treeview_tasks.set(selected_item, 'Status', new_status)
+            scheduler = win32com.client.Dispatch(f'Schedule.Service.1')
+            command = [
+            "schtasks",
+            "/change",
+            "/s",
+            server_name,
+            "/tn",
+            task_name,
+            "/u",
+            username,
+            "/p",
+            password
+        ]
+            if new_status == 'Lista':
+                command.extend(["/enable"])
+            elif new_status == 'Deshabilitada':
+                command.extend(["/disable"])
+            subprocess.run(command, shell=True)
+
+def DecriptorMap():
+    # Cargar y desencriptar el archivo .ini
+
+        global server_name, username, password
+
+        encrypted_file_path = "params.ini"
+        keyfile = open("key.txt","r")
+        encryption_key = keyfile.read()
+        keyfile.close()
+        decrypted_ini_data = decrypt_ini_file(encrypted_file_path, encryption_key)
+
+        config_parser = configparser.ConfigParser()
+        config_parser.read_string(decrypted_ini_data)
+
+        server_name = config_parser.get("Credentials", "servidor")
+        username = config_parser.get("Credentials", "usuario")
+        password = config_parser.get("Credentials", "password")
+
+
+server_name = ""
+username = ""
+password = ""
+
+DecriptorMap()
+
 # Configuración del servidor
-default_server_name = 'SERVERSAP'
+default_server_name = server_name
 
 # Crear la ventana principal
 window = tk.Tk()
@@ -180,6 +223,7 @@ treeview_tasks.configure(height=15)
 context_menu = tk.Menu(window, tearoff=0)
 context_menu.add_command(label="Copiar", command=copy_selected)
 context_menu.add_command(label="Ejecutar", command=execute_selected)
+context_menu.add_command(label="Habilitar/Deshabilitar", command=Update_tasck_status)
 
 # Vincular el menú contextual al Treeview
 treeview_tasks.bind("<Button-3>", lambda event: context_menu.post(event.x_root, event.y_root))
