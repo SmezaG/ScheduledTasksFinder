@@ -111,11 +111,11 @@ def search_tasks(event=None):
 
 def TreeviewCreator(window):
     treeview_tasks = ttk.Treeview(window, columns=('Task', 'Trigger', 'Status', 'Parameters','Arguments'), show='headings')
-    treeview_tasks.heading('Task', text='Tarea')
-    treeview_tasks.heading('Trigger', text='Última ejecución')
-    treeview_tasks.heading('Status', text='Estado')
-    treeview_tasks.heading('Parameters', text='Ruta')
-    treeview_tasks.heading('Arguments', text='Parámetros')
+    treeview_tasks.heading('Task', text='Tarea', command=lambda: sort_column(treeview_tasks, 'Task'))
+    treeview_tasks.heading('Trigger', text='Última ejecución', command=lambda: sort_column(treeview_tasks, 'Trigger'))
+    treeview_tasks.heading('Status', text='Estado', command=lambda: sort_column(treeview_tasks, 'Status'))
+    treeview_tasks.heading('Parameters', text='Ruta', command=lambda: sort_column(treeview_tasks, 'Parameters'))
+    treeview_tasks.heading('Arguments', text='Parámetros', command=lambda: sort_column(treeview_tasks, 'Arguments'))
     #treeview_tasks.pack()
 
     # Ajustar el ancho de las columnas
@@ -174,6 +174,20 @@ def DecriptorMap():
         server_name = config_parser.get("Credentials", "servidor")
         username = config_parser.get("Credentials", "usuario")
         password = config_parser.get("Credentials", "password")
+
+def sort_column(treeview, col, reverse=False):
+    # Obtiene todos los elementos del Treeview
+    data = [(treeview.set(child, col), child) for child in treeview.get_children('')]
+
+    # Ordena los elementos en función del valor de la columna
+    data.sort(reverse=reverse)
+
+    for index, (value, child) in enumerate(data):
+        # Reorganiza los elementos en el Treeview
+        treeview.move(child, '', index)
+
+    # Cambia la dirección de ordenamiento para el próximo clic en el encabezado
+    treeview.heading(col, command=lambda: sort_column(treeview, col, not reverse))
 
 
 server_name = ""
