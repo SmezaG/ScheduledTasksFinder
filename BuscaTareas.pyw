@@ -63,14 +63,12 @@ def copy_selected(event=None):
         window.clipboard_clear()
         window.clipboard_append(copied_data)
 
-
 def decrypt_ini_file(file_path, key):
     with open(file_path, "rb") as file:
         file_data = file.read()
     fernet = Fernet(key)
     decrypted_data = fernet.decrypt(file_data)
     return decrypted_data.decode()
-
 
 def execute_selected(event=None):
     selected_item = treeview_tasks.focus()
@@ -107,7 +105,6 @@ def search_tasks(event=None):
             treeview_tasks.insert('', tk.END, values=(task_name, next_run_time, status, parameters, Arguments), tags=("Data",))
     else:
         treeview_tasks.insert('', tk.END, values=("No se encontraron tareas que coincidan con el texto de búsqueda.", "", "", ""))
-
 
 def TreeviewCreator(window):
     treeview_tasks = ttk.Treeview(window, columns=('Task', 'Trigger', 'Status', 'Parameters','Arguments'), show='headings')
