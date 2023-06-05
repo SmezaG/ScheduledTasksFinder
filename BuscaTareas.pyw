@@ -123,6 +123,14 @@ def TreeviewCreator(window):
     treeview_tasks.column('Arguments', width=200)
     return treeview_tasks
 
+def on_key_release(event=None):
+
+    # Si pulsamos Enter buscará, si no borrará el contenido
+    if event.keysym == "Return":
+        search_tasks()
+    elif not entry_search.get():
+         treeview_tasks.delete(*treeview_tasks.get_children())
+
 def Update_task_status(event=None):
     selected_item = treeview_tasks.focus()
     if selected_item:
@@ -249,7 +257,7 @@ empty_label = ttk.Label(frame_main, text="")
 empty_label.grid(row=2, column=0, columnspan=2)
 
 # Vincular la tecla "Enter" a la función search_tasks
-entry_search.bind('<Return>', search_tasks)
+entry_search.bind('<KeyRelease>', on_key_release)
 
 # Crear Treeview con estilo
 treeview_tasks = TreeviewCreator(frame_main)
