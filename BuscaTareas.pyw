@@ -91,6 +91,10 @@ def execute_selected(event=None):
         ]
         subprocess.run(command, shell=True)
 
+         # Actualizar la columna de estado en el treeview
+        treeview_tasks.set(selected_item, 'Status', 'En ejecución')
+        
+
 def search_tasks(event=None):
     # Obtener el texto de búsqueda de la entrada de texto
     search_text = entry_search.get()
@@ -126,7 +130,7 @@ def TreeviewCreator(window):
 def on_key_release(event=None):
 
     # Si pulsamos Enter buscará, si no borrará el contenido
-    if event.keysym == "Return":
+    if event.keysym == "Return" or event.keysym == "F5":
         search_tasks()
     elif not entry_search.get():
          treeview_tasks.delete(*treeview_tasks.get_children())
