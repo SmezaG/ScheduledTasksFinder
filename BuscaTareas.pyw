@@ -199,6 +199,33 @@ def sort_column(treeview, col, reverse=False):
     treeview.heading(col, command=lambda: sort_column(treeview, col, not reverse))
 
 
+def copy_treeview_to_clipboard(event=None):
+    
+        # Obtener todas las columnas del Treeview
+        columns = treeview_tasks["columns"]
+
+        # Crear una cadena para almacenar los datos
+        data = ""
+
+        # Obtener los encabezados de columna
+        header = "\t".join(columns) + "\n"
+        data += header
+
+        # Obtener todos los elementos del Treeview
+        all_items = treeview_tasks.get_children()
+
+        # Obtener los datos de cada fila
+        for item in all_items:
+            values = treeview_tasks.item(item, "values")
+            row_data = "\t".join(str(value) for value in values) + "\n"
+            data += row_data
+
+        # Copiar los datos al portapapeles
+        treeview_tasks.clipboard_clear()
+        treeview_tasks.clipboard_append(data)
+
+
+
 server_name = ""
 username = ""
 password = ""
@@ -276,6 +303,7 @@ context_menu = tk.Menu(window, tearoff=0)
 context_menu.add_command(label="Copiar", command=copy_selected)
 context_menu.add_command(label="Ejecutar", command=execute_selected)
 context_menu.add_command(label="Habilitar/Deshabilitar", command=Update_task_status)
+context_menu.add_command(label="Copiar todo", command=copy_treeview_to_clipboard)
 
 # Vincular el menú contextual al Treeview
 treeview_tasks.bind("<Button-3>", lambda event: context_menu.post(event.x_root, event.y_root))
