@@ -133,7 +133,7 @@ def on_key_release(event=None):
     if event.keysym == "Return" or event.keysym == "F5":
         search_tasks()
     elif not entry_search.get():
-         treeview_tasks.delete(*treeview_tasks.get_children())
+         search_tasks()
 
 def Update_task_status(event=None):
     selected_item = treeview_tasks.focus()
@@ -310,5 +310,12 @@ treeview_tasks.bind("<Button-3>", lambda event: context_menu.post(event.x_root, 
 
 style.map("Treeview", bordercolor=[("active", "#0078D7")])
 
+scrollbar = ttk.Scrollbar(frame_main, orient="vertical", command=treeview_tasks.yview)
+treeview_tasks.configure(yscrollcommand=scrollbar.set)
+scrollbar.grid(row=3, column=2, sticky="ns")
+
+treeview_tasks.configure(yscrollcommand=scrollbar.set)
+
 # Iniciar el bucle principal de la interfaz
+search_tasks()
 window.mainloop()
