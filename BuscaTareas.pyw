@@ -94,6 +94,30 @@ def execute_selected(event=None):
          # Actualizar la columna de estado en el treeview
         treeview_tasks.set(selected_item, 'Status', 'En ejecución')
         
+def stop_selected(event=None):
+    selected_item = treeview_tasks.focus()
+    if selected_item:
+        task_name = treeview_tasks.item(selected_item, 'values')[0]
+        print(f"Deteniendo tarea: {task_name}")
+
+        # Comando para detener la tarea en el servidor remoto con el usuario "username"
+        command = [
+            "schtasks",
+            "/end",
+            "/s",
+            server_name,
+            "/tn",
+            task_name,
+            "/u",
+            username,
+            "/p",
+            password
+        ]
+        subprocess.run(command, shell=True)
+
+        # Actualizar la columna de estado en el treeview
+        treeview_tasks.set(selected_item, 'Status', 'Detenida')
+
 
 def search_tasks(event=None):
     # Obtener el texto de búsqueda de la entrada de texto
@@ -304,6 +328,7 @@ context_menu.add_command(label="Copiar", command=copy_selected)
 context_menu.add_command(label="Ejecutar", command=execute_selected)
 context_menu.add_command(label="Habilitar/Deshabilitar", command=Update_task_status)
 context_menu.add_command(label="Copiar todo", command=copy_treeview_to_clipboard)
+context_menu.add_command(label="Detener", command=stop_selected)
 
 # Vincular el menú contextual al Treeview
 treeview_tasks.bind("<Button-3>", lambda event: context_menu.post(event.x_root, event.y_root))
