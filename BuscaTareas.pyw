@@ -204,8 +204,8 @@ def DecriptorMap():
         config_parser = configparser.ConfigParser()
         config_parser.read_string(decrypted_ini_data)
 
-        server_name = config_parser.get("Credentials", "servidor")
-        username = config_parser.get("Credentials", "usuario")
+        server_name = config_parser.get("Credentials", "server")
+        username = config_parser.get("Credentials", "user")
         password = config_parser.get("Credentials", "password")
 
 def sort_column(treeview, col, reverse=False):
