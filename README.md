@@ -22,16 +22,18 @@ This guide will help you set up the necessary environment to run the project. Fo
    ```ini
    [Credentials]
    server = "your_server"
-   user = "your_user"
-   password = "your_password"
+   user = "your_user" (user with admin power in the server)
+   password = "your_password" (password to that user)
    
    
   Replace "your_server", "your_username", and "your_password" with the appropriate values. Save the file after making the changes.
   
 
 4. Run the Encryptor.ini file to encrypt the modified .ini file. This process will generate a password. Take note of this password.
+   
+   `C:\\Path\to\file encryptor.py`
 
-5. Copy that password into the key.txt file 
+6. Copy that password into the key.txt file 
 
 ## Execution
 
