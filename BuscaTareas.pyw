@@ -76,23 +76,19 @@ def execute_selected(event=None):
         task_name = treeview_tasks.item(selected_item, 'values')[0]
         print(f"Ejecutando tarea: {task_name}")
 
-        # Comando para ejecutar la tarea en el servidor remoto con el usuario "username"
-        command = [
-            "schtasks",
-            "/run",
-            "/s",
-            server_name,
-            "/tn",
-            task_name,
-            "/u",
-            username,
-            "/p",
-            password
-        ]
-        subprocess.run(command, shell=True)
+        # Construir el comando de PowerShell con credenciales seguras
+        command = f"""
+        $securePassword = ConvertTo-SecureString "{password}" -AsPlainText -Force;
+        $credential = New-Object System.Management.Automation.PSCredential("{username}", $securePassword);
+        schtasks /run /s {server_name} /tn {task_name} /u $credential.UserName /p $credential.GetNetworkCredential().Password
+        """
 
-         # Actualizar la columna de estado en el treeview
+        # Ejecutar el comando en PowerShell
+        subprocess.run(["powershell", "-Command", command])
+
+        # Actualizar la columna de estado en el treeview
         treeview_tasks.set(selected_item, 'Status', 'En ejecución')
+
         
 def stop_selected(event=None):
     selected_item = treeview_tasks.focus()
@@ -100,20 +96,15 @@ def stop_selected(event=None):
         task_name = treeview_tasks.item(selected_item, 'values')[0]
         print(f"Deteniendo tarea: {task_name}")
 
-        # Comando para detener la tarea en el servidor remoto con el usuario "username"
-        command = [
-            "schtasks",
-            "/end",
-            "/s",
-            server_name,
-            "/tn",
-            task_name,
-            "/u",
-            username,
-            "/p",
-            password
-        ]
-        subprocess.run(command, shell=True)
+        # Construir el comando de PowerShell para detener la tarea con credenciales seguras
+        command = f"""
+        $securePassword = ConvertTo-SecureString "{password}" -AsPlainText -Force;
+        $credential = New-Object System.Management.Automation.PSCredential("{username}", $securePassword);
+        schtasks /end /s {server_name} /tn {task_name} /u $credential.UserName /p $credential.GetNetworkCredential().Password
+        """
+
+        # Ejecutar el comando en PowerShell
+        subprocess.run(["powershell", "-Command", command])
 
         # Actualizar la columna de estado en el treeview
         treeview_tasks.set(selected_item, 'Status', 'Detenida')
@@ -159,7 +150,8 @@ def on_key_release(event=None):
     elif not entry_search.get():
          search_tasks()
 
-def Update_task_status(event=None):
+def Update_task_status(event=None):  
+    escaped_password = f'"{password}"' # Just to ensure that no special characteres will thow any error
     selected_item = treeview_tasks.focus()
     if selected_item:
 
@@ -171,24 +163,24 @@ def Update_task_status(event=None):
             new_status = 'Deshabilitada'
     if new_status:
             treeview_tasks.set(selected_item, 'Status', new_status)
-            scheduler = win32com.client.Dispatch(f'Schedule.Service.1')
-            command = [
-            "schtasks",
-            "/change",
-            "/s",
-            server_name,
-            "/tn",
-            task_name,
-            "/u",
-            username,
-            "/p",
-            password
-        ]
+
+           # Comprobar el estado actual y definir el comando correspondiente
             if new_status == 'Lista':
-                command.extend(["/enable"])
+                action = "/enable"
             elif new_status == 'Deshabilitada':
-                command.extend(["/disable"])
-            subprocess.run(command, shell=True)
+                action = "/disable"
+            else:
+                raise ValueError("Estado desconocido: new_status debe ser 'Lista' o 'Deshabilitada'")
+
+    # Comando PowerShell para ejecutar schtasks con credenciales seguras y cambiar el estado
+    command = f"""
+    $securePassword = ConvertTo-SecureString "{password}" -AsPlainText -Force;
+    $credential = New-Object System.Management.Automation.PSCredential("{username}", $securePassword);
+    schtasks /change /s {server_name} /tn {task_name} {action} /u $credential.UserName /p $credential.GetNetworkCredential().Password
+    """
+
+    # Ejecutar el comando en PowerShell
+    subprocess.run(["powershell", "-Command", command])
 
 def DecriptorMap():
     # Cargar y desencriptar el archivo .ini
